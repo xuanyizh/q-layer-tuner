@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">Q</span><div><strong>Q Layer</strong><span>RECIPE TUNER</span></div></div><div class="header-meta"><span>InGaAsP / InP (001)</span><span class="version">v2.0</span></div></header>
+  <header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">Q</span><div><strong>Q Layer</strong><span>RECIPE TUNER</span></div></div><div class="header-meta"><span>InGaAsP / InP (001)</span><span class="version">v2.1</span></div></header>
   <main>
-    <div class="page-title"><div><h1>Q-layer recipe adjustments</h1><p>Target ratio, measured PL and XRD → source settings.</p></div><button id="reset" class="button secondary" type="button">Reset example</button></div>
+    <div class="page-title"><div><h1>Q-layer recipe adjustments</h1><p>Target ratio, measured PL and XRD → source settings.</p></div><button id="reset" class="button secondary" type="button">Reset recipe</button></div>
     <div class="scope-strip"><span class="chip">REFERENCE-ANCHORED PL</span><span>Coherent InGaAsP · Measured As/P BEP curves · Selectable bandgap strain correction</span></div>
     <div class="workspace">
       <section class="input-panel panel" aria-label="Recipe inputs">
@@ -31,7 +31,7 @@
               <p class="micro">The known rate anchors this growth. It is not locked for the next recipe. A pure rocking-curve separation can contain tilt.</p>
             </section>
             <section class="form-section"><div class="section-label"><span>03</span><h2>Settings used for growth</h2></div>
-              <div class="field-grid"><label>In cell <span>°C</span><input id="inTemp" name="inTemp" type="number" step="0.1"></label><label>Ga cell <span>°C</span><input id="gaTemp" name="gaTemp" type="number" step="0.1"></label></div><div class="field-grid"><label>As valve <span>30–270</span><input id="asValve" name="asValve" type="number" step="0.1"></label><label>P valve <span>optional · 5–80</span><input id="pValve" name="pValve" type="number" step="0.1" placeholder="Not recorded"></label></div><p class="micro">P is held fixed during recipe correction. Enter its valve to report BEP, or leave blank if unknown.</p>
+              <div class="field-grid"><label>In cell <span>°C</span><input id="inTemp" name="inTemp" type="number" step="0.1"></label><label>Ga cell <span>°C</span><input id="gaTemp" name="gaTemp" type="number" step="0.1"></label></div><div class="field-grid"><label>As valve <span id="as-range">30–270</span><input id="asValve" name="asValve" type="number" step="0.1"></label><label>P valve <span id="p-range">optional · 5–80</span><input id="pValve" name="pValve" type="number" step="0.1" placeholder="Not recorded"></label></div><p class="micro">P is held fixed during recipe correction. Enter its valve to report BEP, or leave blank if unknown.</p>
             </section>
             <section class="form-section"><div class="section-label"><span>04</span><h2>Correction to apply</h2></div><div class="field-grid"><label>In step <span>%</span><input id="inStep" name="inStep" type="number" min="0" max="100" step="5"></label><label>Ga step <span>%</span><input id="gaStep" name="gaStep" type="number" min="0" max="100" step="5"></label><label>As step <span>%</span><input id="asStep" name="asStep" type="number" min="0" max="100" step="5"></label></div><p class="micro">Percentages interpolate the actual temperature or valve setting. 100% applies the full calculated change.</p>
             </section>
@@ -40,9 +40,24 @@
             <section class="form-section"><div class="section-label"><span>01</span><h2>Group-III source curves</h2></div><div class="formula">log₁₀ R = A − B / T<sub>K</sub></div><p class="helper">Defaults transcribed from your image. Corrections use B and the current inferred rate; A cancels when the curve is anchored to that rate.</p>
               <div class="field-grid"><label>In · A<input id="inA" name="inA" type="number" step="any"></label><label>In · B <span>K</span><input id="inB" name="inB" type="number" step="any"></label><label>Ga · A<input id="gaA" name="gaA" type="number" step="any"></label><label>Ga · B <span>K</span><input id="gaB" name="gaB" type="number" step="any"></label></div><p id="nominal-rates" class="micro"></p>
             </section>
-            <section class="form-section"><div class="section-label"><span>02</span><h2>As & P valve calibrations</h2></div><div class="formula">BEP (Torr) = 10⁻⁶ Σ aⱼ Vʲ · j = 0…5</div><p class="helper">Fifth-degree fits to your measured BEP. Coefficients below give BEP in 10⁻⁶ Torr before unit conversion. No extrapolation.</p>
-              <details class="coefficient-editor"><summary>As coefficients · valve 30–270</summary><div id="as-coefficients" class="field-grid"></div></details>
-              <details class="coefficient-editor"><summary>P coefficients · valve 5–80</summary><div id="p-coefficients" class="field-grid"></div></details>
+            <section class="form-section"><div class="section-label"><span>02</span><h2>As & P valve calibrations</h2></div><div class="formula">BEP (Torr) = 10⁻⁶ Σ aⱼ Vʲ · j = 0…5</div><p class="helper">Fit new As and P measurements here. Coefficients below give BEP in 10⁻⁶ Torr before unit conversion. No extrapolation beyond each active measured range.</p>
+              <div class="calibration-intro"><p>Paste two columns from Excel or load a CSV/TSV/text file. Select the pressure units, then fit and use the new curve. At least 6 distinct valve settings are required.</p><p class="micro">Draft edits do not affect calculations until you click Fit &amp; use. Each accepted fit sets its measured valve range. All six polynomial terms are included.</p></div><div class="calibration-editor">
+ <h3>As measured valve / BEP pairs</h3>
+ <div class="field-grid"><label>BEP column units<select id="cal-as-unit"><option value="torr">Torr · e.g. 0.22e-6</option><option value="microtorr">10⁻⁶ Torr · e.g. 0.22</option></select></label><label>Load measured pairs<input id="cal-as-file" type="file" accept=".csv,.tsv,.txt,text/plain,text/csv"></label></div>
+ <label for="cal-as-data">Valve, BEP · one pair per line</label><textarea id="cal-as-data" rows="6" spellcheck="false" aria-describedby="cal-as-status"></textarea>
+ <div class="calibration-actions"><button id="cal-as-fit" class="button primary" type="button" disabled>Fit &amp; use As curve</button><button id="cal-as-reset" class="button secondary" type="button" disabled>Restore original As</button></div>
+ <div id="cal-as-status" class="calibration-status" role="status">Loading original calibration…</div>
+ <div id="cal-as-review" class="fit-review" hidden></div>
+ </div><div class="calibration-editor">
+ <h3>P measured valve / BEP pairs</h3>
+ <div class="field-grid"><label>BEP column units<select id="cal-p-unit"><option value="torr">Torr · e.g. 0.22e-6</option><option value="microtorr">10⁻⁶ Torr · e.g. 0.22</option></select></label><label>Load measured pairs<input id="cal-p-file" type="file" accept=".csv,.tsv,.txt,text/plain,text/csv"></label></div>
+ <label for="cal-p-data">Valve, BEP · one pair per line</label><textarea id="cal-p-data" rows="6" spellcheck="false" aria-describedby="cal-p-status"></textarea>
+ <div class="calibration-actions"><button id="cal-p-fit" class="button primary" type="button" disabled>Fit &amp; use P curve</button><button id="cal-p-reset" class="button secondary" type="button" disabled>Restore original P</button></div>
+ <div id="cal-p-status" class="calibration-status" role="status">Loading original calibration…</div>
+ <div id="cal-p-review" class="fit-review" hidden></div>
+ </div><div class="calibration-files"><button id="cal-save" class="button secondary" type="button" disabled>Save calibrations JSON</button><label>Load saved calibrations JSON<input id="cal-load" type="file" accept=".json,application/json" disabled></label><p id="cal-profile-status" class="micro" role="status">Calibrations last for this session. Save a JSON file to reuse them after reload or on another computer. Only applied curves and their measurements are saved.</p></div>
+              <details class="coefficient-editor"><summary id="as-coeff-title">As coefficients · valve 30–270</summary><div id="as-coefficients" class="field-grid"></div></details>
+              <details class="coefficient-editor"><summary id="p-coeff-title">P coefficients · valve 5–80</summary><div id="p-coefficients" class="field-grid"></div></details>
               <label>As incorporation response exponent · n<input id="asExponent" name="asExponent" type="number" step="0.05"></label>
               <p class="micro">Recipe correction retains the local assumption r<sub>As</sub> ∝ BEP<sub>As</sub><sup>n</sup>, with P and growth conditions fixed. Default n = 1 is provisional; the measured BEP fits do not establish this exponent.</p>
             </section>
@@ -70,7 +85,7 @@
         <div id="loading" class="panel loading">Loading Python for the recipe calculator… First load may take a few seconds.</div>
       </section>
     </div>
-    <footer><span>Q Layer / InGaAsP recipe correction</span><span>Hosted calculations run in your browser. The local launcher uses Python on your computer. Inputs are not retained after reload.</span></footer>
+    <footer><span>Q Layer / InGaAsP recipe correction</span><span>Hosted calculations run in your browser. The local launcher uses Python on your computer. Save calibration JSON to keep your fitted curves. Other inputs reset after reload.</span></footer>
   </main>
   <script type="module" src="./app.js"></script>
 </body></html>

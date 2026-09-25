@@ -6,6 +6,10 @@ const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const number=(v,d=2)=>Number.isFinite(v)?v.toFixed(d):'—';
 const signed=(v,d=2)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v)>=0?'+'+number(Math.abs(v)<0.5*Math.pow(10,-d)?0:v,d):number(v,d);
 let lastResult=null,lastError=null,timer;
+let activeCalibration=null,originalCalibration=null,profileRevision=0,converterRevision=0;
+const fitRevision={As:0,P:0};
+const copy=value=>JSON.parse(JSON.stringify(value));
+const profileRequest=payload=>client.request({...payload,calibrations:activeCalibration});
 function setFields(s){
   for(const key of Object.keys(defaults)){if($(key))$(key).value=s[key]??'';}
 }
@@ -78,7 +82,7 @@ async function run(){
   $('calc-status').textContent='Calculating…';$('calculate').disabled=true;
   $('results').hidden=true;$('loading').hidden=false;$('loading').textContent='Calculating source adjustments…';
   try{
-    const r=await client.request({action:'calculate',settings:readFields()});
+    const r=await profileRequest({action:'calculate',settings:readFields()});
     if(id!==generation)return null;
     lastResult=r;lastError=null;render(r);return r;
   }catch(e){if(id===generation)showError(e);return null;}
@@ -87,26 +91,143 @@ async function run(){
 function calibrationChart(name,c){
   if(c.error)return `<p class="notice">${esc(name+': '+c.error)}</p>`;
   const W=530,H=235,L=55,R=18,T=25,B=40;
-  const [lo,hi]=c.range,max=Math.max(...c.curve.map(p=>p.bep),...c.measurements.map(p=>p.bep))*1.1;
-  const X=v=>L+(v-lo)/(hi-lo)*(W-L-R),Y=v=>H-B-v/max*(H-B-T);
+  const [lo,hi]=c.range,values=[...c.curve.map(p=>p.bep),...c.measurements.map(p=>p.bep)];
+  const min=Math.min(0,...values),max=Math.max(...values)*1.1;
+  const X=v=>L+(v-lo)/(hi-lo)*(W-L-R),Y=v=>H-B-(v-min)/(max-min)*(H-B-T);
   let grid='';
-  for(let i=0;i<5;i++){const val=max*i/4;grid+=`<line x1="${L}" x2="${W-R}" y1="${Y(val)}" y2="${Y(val)}" stroke="#e6edf2"/><text x="${L-7}" y="${Y(val)+4}" text-anchor="end" fill="#52657b" font-size="12">${number(val*1e6,1)}</text>`;}
+  for(let i=0;i<5;i++){const val=min+(max-min)*i/4;grid+=`<line x1="${L}" x2="${W-R}" y1="${Y(val)}" y2="${Y(val)}" stroke="#e6edf2"/><text x="${L-7}" y="${Y(val)+4}" text-anchor="end" fill="#52657b" font-size="12">${number(val*1e6,1)}</text>`;}
   const path=c.curve.map((p,i)=>`${i?'L':'M'}${X(p.valve)},${Y(p.bep)}`).join(' ');
-  return `<div><h3>${name} · valve ${lo}–${hi}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${name} measured BEP and fitted fifth-degree curve"><text x="${L}" y="14" font-size="12" fill="#52657b">BEP (10⁻⁶ Torr)</text>${grid}<path d="${path}" fill="none" stroke="#127c75" stroke-width="2.5"/>${c.measurements.map(p=>`<circle cx="${X(p.valve)}" cy="${Y(p.bep)}" r="4" fill="white" stroke="#127c75" stroke-width="1.5"/>`).join('')}<text x="${L}" y="${H-15}" font-size="12">${lo}</text><text x="${W-R}" y="${H-15}" text-anchor="end" font-size="12">${hi}</text><text x="${W/2}" y="${H-8}" text-anchor="middle" font-size="12">Valve setting</text></svg><p class="micro">R² ${number(c.rSquared,7)} · maximum measured-point residual ${number(c.maxRelativePercent,2)}%. Residuals are not uncertainty bounds.</p></div>`;
+  return `<div><h3>${name} · valve ${number(lo,2)}–${number(hi,2)}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${name} measured BEP and fitted fifth-degree curve"><text x="${L}" y="14" font-size="12" fill="#52657b">BEP (10⁻⁶ Torr)</text>${grid}<path d="${path}" fill="none" stroke="#127c75" stroke-width="2.5"/>${c.measurements.map(p=>`<circle cx="${X(p.valve)}" cy="${Y(p.bep)}" r="4" fill="white" stroke="#127c75" stroke-width="1.5"/>`).join('')}<text x="${L}" y="${H-15}" font-size="12">${lo}</text><text x="${W-R}" y="${H-15}" text-anchor="end" font-size="12">${hi}</text><text x="${W/2}" y="${H-8}" text-anchor="middle" font-size="12">Valve setting</text></svg><p class="micro">R² ${number(c.rSquared,7)} · maximum measured-point residual ${number(c.maxRelativePercent,2)}%. Residuals are not uncertainty bounds.</p></div>`;
 }
 async function convert(){
   if(!ready)return;
   const text=$('convert-value').value.trim();
   if(!text){$('convert-result').textContent='Enter a value to convert.';return;}
   const direction=$('convert-direction').value;
+  const id=++converterRevision,revision=profileRevision;
   const value=Number(text)*(direction==='bep_to_valve'?1e-6:1);
   $('convert-button').disabled=true;
   try{
-    const r=await client.request({action:'convert_bep',source:$('convert-source').value,direction,value,settings:readFields()});
+    const r=await profileRequest({action:'convert_bep',source:$('convert-source').value,direction,value,settings:readFields()});
+    if(id!==converterRevision||revision!==profileRevision)return;
     $('convert-result').textContent=`${r.source}: valve ${number(r.valve,4)} ↔ ${(r.bepTorr*1e6).toFixed(6)} × 10⁻⁶ Torr`;
-  }catch(e){$('convert-result').textContent=e.message;}
+  }catch(e){if(id===converterRevision&&revision===profileRevision)$('convert-result').textContent=e.message;}
   finally{$('convert-button').disabled=false;}
 }
+function calibrationText(record,unit='torr'){
+  return record.measurements.map(r=>`${r.valve}, ${(r.bep_torr*(unit==='microtorr'?1e6:1)).toPrecision(10)}`).join('\n');
+}
+function syncSource(source,record,fillData=true){
+  const prefix=source.toLowerCase(),[lo,hi]=record.valid_valve_range;
+  record.raw_coefficients_ascending_microtorr.forEach((c,j)=>$(prefix+'C'+j).value=c);
+  if(fillData){$('cal-'+prefix+'-unit').value='torr';$('cal-'+prefix+'-data').value=calibrationText(record);}
+  $(prefix+'-range').textContent=(source==='P'?'optional · ':'')+`${lo}–${hi}`;
+  $(prefix+'-coeff-title').textContent=`${source} coefficients · valve ${lo}–${hi}`;
+}
+function showFitReview(source,summary,warnings=[]){
+  const node=$('cal-'+source.toLowerCase()+'-review');node.hidden=false;
+  const rows=summary.measurements.map(r=>`<tr><td>${number(r.valve,3)}</td><td>${(r.bep*1e6).toPrecision(7)}</td><td>${(r.fitted*1e6).toPrecision(7)}</td><td>${signed(r.residual/r.bep*100,3)}%</td></tr>`).join('');
+  node.innerHTML=calibrationChart(source,summary)+`<div class="fit-stats">${summary.pointCount} points · RMSE ${summary.rmse.toExponential(3)} Torr</div>`+
+    warnings.map(w=>`<div class="fit-warning">${esc(w)}</div>`).join('')+
+    `<details><summary>Measured versus fitted values</summary><div class="fit-table-wrap"><table><thead><tr><th>Valve</th><th>Measured<br>10⁻⁶ Torr</th><th>Fitted<br>10⁻⁶ Torr</th><th>Residual</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+}
+function draftChanged(source){
+  const prefix=source.toLowerCase();fitRevision[source]++;
+  $('cal-'+prefix+'-status').textContent='Unfitted draft. The recipe still uses the previously applied calibration.';
+  $('cal-'+prefix+'-review').hidden=true;
+}
+async function fitSource(source){
+  if(!ready)return;
+  const prefix=source.toLowerCase(),button=$('cal-'+prefix+'-fit'),id=++fitRevision[source];
+  const text=$('cal-'+prefix+'-data').value,unit=$('cal-'+prefix+'-unit').value;
+  button.disabled=true;$('cal-'+prefix+'-status').textContent='Fitting all six polynomial terms in Python…';
+  try{
+    const r=await client.request({action:'fit_calibration',source,text,unit});
+    if(id!==fitRevision[source])return;
+    showFitReview(source,r.summary,r.warnings);
+    if(!r.usable){$('cal-'+prefix+'-status').textContent='Not applied. '+r.summary.validationError+' Previous calibration retained.';return;}
+    activeCalibration.sources[source]=r.record;profileRevision++;
+    syncSource(source,r.record,false);
+    $('cal-'+prefix+'-status').textContent=`Applied ${source} fit · valve ${r.summary.range[0]}–${r.summary.range[1]}. Recipe and converter now use this curve.`;
+    $('cal-profile-status').textContent='New calibration is active for this session. Save calibrations JSON to keep it after reload.';
+    $('convert-result').textContent='Calibration updated. Convert again to use the new curve.';
+    await run();
+  }catch(e){if(id===fitRevision[source]){$('cal-'+prefix+'-status').textContent='Not applied. '+e.message+' Previous calibration retained.';$('cal-'+prefix+'-review').hidden=true;}}
+  finally{button.disabled=false;}
+}
+async function restoreSource(source){
+  if(!ready)return;
+  const prefix=source.toLowerCase();fitRevision[source]++;profileRevision++;
+  activeCalibration.sources[source]=copy(originalCalibration.sources[source]);
+  syncSource(source,activeCalibration.sources[source]);
+  $('cal-'+prefix+'-review').hidden=true;$('cal-'+prefix+'-status').textContent='Original calibration restored and applied.';
+  $('convert-result').textContent='Calibration restored. Convert again to use the active curve.';
+  return run();
+}
+function currentProfile(){
+  const p=copy(activeCalibration);p.schema_version=2;
+  for(const source of ['As','P']){
+    const prefix=source.toLowerCase();
+    p.sources[source].raw_coefficients_ascending_microtorr=Array.from({length:6},(_,j)=>{
+      const value=$(prefix+'C'+j).value.trim();return value===''?null:Number(value);
+    });
+  }
+  return p;
+}
+async function saveCalibrations(){
+  if(!ready)return;$('cal-save').disabled=true;
+  const revision=profileRevision;
+  try{
+    const result=await client.request({action:'validate_calibrations',calibrations:currentProfile()});
+    if(revision!==profileRevision)throw new Error('Calibration changed while saving; click Save again.');
+    const blob=new Blob([JSON.stringify(result.profile,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='Q_Layer_BEP_Calibrations.json';document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('cal-profile-status').textContent='Calibration download prepared. Keep the JSON file and use Load saved calibrations to restore it. Unfitted drafts are not included.';
+  }catch(e){$('cal-profile-status').textContent='Calibration was not saved: '+e.message;}
+  finally{$('cal-save').disabled=false;}
+}
+async function loadCalibrations(event){
+  const file=event.target.files?.[0];if(!file||!ready)return;
+  const revision=profileRevision;event.target.disabled=true;
+  try{
+    if(file.size>1048576)throw new Error('Calibration JSON must be smaller than 1 MiB.');
+    const profile=JSON.parse(await file.text());
+    const result=await client.request({action:'validate_calibrations',calibrations:profile});
+    if(revision!==profileRevision)throw new Error('Calibration changed while loading; choose the file again.');
+    activeCalibration=result.profile;profileRevision++;
+    for(const source of ['As','P']){
+      fitRevision[source]++;syncSource(source,activeCalibration.sources[source]);
+      showFitReview(source,result.summaries[source]);
+      $('cal-'+source.toLowerCase()+'-status').textContent='Loaded and applied from '+file.name+'.';
+    }
+    $('cal-profile-status').textContent='Both calibrations loaded for this session. Recipe inputs are unchanged.';
+    $('convert-result').textContent='Calibrations loaded. Convert again to use the new curves.';
+    await run();
+  }catch(e){$('cal-profile-status').textContent='Not loaded: '+e.message+' Previous calibrations retained.';}
+  finally{event.target.disabled=false;event.target.value='';}
+}
+for(const source of ['As','P']){
+  const prefix=source.toLowerCase();
+  $('cal-'+prefix+'-fit').addEventListener('click',()=>fitSource(source));
+  $('cal-'+prefix+'-reset').addEventListener('click',()=>restoreSource(source));
+  $('cal-'+prefix+'-data').addEventListener('input',()=>draftChanged(source));
+  $('cal-'+prefix+'-unit').addEventListener('change',()=>draftChanged(source));
+  $('cal-'+prefix+'-file').addEventListener('change',async event=>{
+    const file=event.target.files?.[0];if(!file)return;draftChanged(source);
+    const revision=fitRevision[source];
+    try{
+      if(file.size>50000)throw new Error('Use a text file smaller than 50,000 bytes.');
+      const text=await file.text();if(revision!==fitRevision[source])return;
+      $('cal-'+prefix+'-data').value=text;
+      $('cal-'+prefix+'-status').textContent='Loaded '+file.name+'. Check BEP units, then click Fit & use.';
+    }catch(e){$('cal-'+prefix+'-status').textContent=e.message;}
+    finally{event.target.value='';}
+  });
+}
+$('cal-save').addEventListener('click',saveCalibrations);
+$('cal-load').addEventListener('change',loadCalibrations);
 function activateTab(name){
   for(const n of ['recipe','calibration']){
     $(`tab-${n}`).setAttribute('aria-selected',String(n===name));$(`tab-${n}`).tabIndex=n===name?0:-1;$(`${n}-fields`).hidden=n!==name;
@@ -117,13 +238,15 @@ for(const n of ['recipe','calibration']){
   $(`tab-${n}`).addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'recipe':e.key==='End'?'calibration':n==='recipe'?'calibration':'recipe';activateTab(next);$(`tab-${next}`).focus();}});
 }
 $('recipe-form').addEventListener('submit',e=>{e.preventDefault();return run();});
-$('recipe-form').addEventListener('input',e=>{if(e.target.id.startsWith('convert-'))return;generation++;lastResult=null;clearTimeout(timer);$('results').hidden=true;$('loading').hidden=false;$('loading').textContent='Updating calculations…';$('calc-status').textContent='Updating…';timer=setTimeout(run,350);});
-$('recipe-form').addEventListener('change',e=>{if(!e.target.id.startsWith('convert-'))return run();});
+$('recipe-form').addEventListener('input',e=>{if(e.target.id.startsWith('convert-')){converterRevision++;$('convert-result').textContent='Value changed. Click Convert.';return;}if(e.target.id.startsWith('cal-'))return;
+ const m=e.target.id.match(/^(as|p)C[0-5]$/);if(m){const source=m[1]==='as'?'As':'P';fitRevision[source]++;profileRevision++;$('convert-result').textContent='Calibration changed. Convert again to use the active curve.';$('cal-'+m[1]+'-status').textContent='Manual coefficients active. Measured data and valve range are unchanged.';$('cal-'+m[1]+'-review').hidden=true;}
+ generation++;lastResult=null;clearTimeout(timer);$('results').hidden=true;$('loading').hidden=false;$('loading').textContent='Updating calculations…';$('calc-status').textContent='Updating…';timer=setTimeout(run,350);});
+$('recipe-form').addEventListener('change',e=>{if(!e.target.id.startsWith('convert-')&&!e.target.id.startsWith('cal-'))return run();});
 $('convert-button').addEventListener('click',convert);
-$('convert-direction').addEventListener('change',()=>{$('convert-label').textContent=$('convert-direction').value==='bep_to_valve'?'BEP (10⁻⁶ Torr)':'Valve setting';$('convert-result').textContent='Enter a value in the selected units and convert.';});
-$('convert-source').addEventListener('change',()=>{$('convert-result').textContent='Enter a value and convert.';});
-$('reset').addEventListener('click',()=>{setFields(defaults);activateTab('recipe');return run();});
-function concise(r){return {target:r.target,current:r.current,totalCurrentRate:r.total,sourceSettings:r.settings,appliedPrediction:r.prediction,asModel:'measured_fifth_degree_BEP_fit_and_provisional_incorporation_response',opticalStrain:r.inputs.opticalStrain,bep:r.bep,asError:r.asError,notices:r.notices};}
+$('convert-direction').addEventListener('change',()=>{converterRevision++;$('convert-label').textContent=$('convert-direction').value==='bep_to_valve'?'BEP (10⁻⁶ Torr)':'Valve setting';$('convert-result').textContent='Enter a value in the selected units and convert.';});
+$('convert-source').addEventListener('change',()=>{converterRevision++;$('convert-result').textContent='Enter a value and convert.';});
+$('reset').addEventListener('click',()=>{const coefficients=Object.fromEntries(Object.entries(readFields()).filter(([k])=>/^(as|p)C[0-5]$/.test(k)));setFields({...defaults,...coefficients});activateTab('recipe');return run();});
+function concise(r){return {target:r.target,current:r.current,totalCurrentRate:r.total,sourceSettings:r.settings,appliedPrediction:r.prediction,asModel:'measured_fifth_degree_BEP_fit_and_provisional_incorporation_response',opticalStrain:r.inputs.opticalStrain,calibrations:r.calibrations,bep:r.bep,asError:r.asError,notices:r.notices};}
 function registerTools(){
   const context=document.modelContext;if(!context?.registerTool)return;
   const properties=Object.fromEntries(Object.entries(defaults).map(([k,v])=>[k,{type:v===null?['number','null']:typeof v==='number'?'number':'string'}]));
@@ -132,18 +255,24 @@ function registerTools(){
   const tools=[{name:'calculate_q_layer_recipe',title:'Calculate Q-layer recipe',description:'Update visible recipe inputs and calculate corrections using Python. Does not control source hardware.',inputSchema:{type:'object',properties,additionalProperties:false},annotations:{readOnlyHint:false},async execute(input){
     if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!Object.hasOwn(defaults,k)))throw new Error('Supply supported recipe inputs.');
     const next={...readFields(),...input};const id=++generation;
-    const r=await client.request({action:'calculate',settings:next});
+    const r=await profileRequest({action:'calculate',settings:next});
     if(id!==generation)throw new Error('Inputs changed during calculation; please retry.');
-    clearTimeout(timer);setFields(next);lastResult=r;lastError=null;render(r);$('calculate').disabled=false;return concise(r);
+    clearTimeout(timer);setFields(next);profileRevision++;for(const source of ['As','P'])fitRevision[source]++;lastResult=r;lastError=null;render(r);$('calculate').disabled=false;return concise(r);
   }},{name:'get_q_layer_result',title:'Read Q-layer result',description:'Read the current visible result without changing inputs.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(){return lastResult?concise(lastResult):{error:lastError||'Not ready'};}}];
   for(const tool of tools){try{Promise.resolve(context.registerTool(tool,{signal:controller.signal})).catch(()=>{});}catch{}}
 }
 try{
-  const metadata=await client.initialize();defaults=metadata.defaults;
+  const metadata=await client.initialize();defaults=metadata.defaults;originalCalibration=copy(metadata.calibration);activeCalibration=copy(metadata.calibration);
   for(const n of ['As','P']){
     const prefix=n.toLowerCase();
     $(prefix+'-coefficients').innerHTML=[5,4,3,2,1,0].map(j=>`<label>a${j}<input id="${prefix}C${j}" name="${prefix}C${j}" type="number" step="any"></label>`).join('');
   }
   setFields(defaults);ready=true;$('calculate').disabled=false;
+  for(const source of ['As','P']){
+    const prefix=source.toLowerCase();syncSource(source,activeCalibration.sources[source]);
+    $('cal-'+prefix+'-fit').disabled=false;$('cal-'+prefix+'-reset').disabled=false;
+    $('cal-'+prefix+'-status').textContent='Original calibration active. Edit or load measured pairs, then click Fit & use.';
+  }
+  $('cal-save').disabled=false;$('cal-load').disabled=false;
   await run();registerTools();
 }catch(e){showError(e);$('error').insertAdjacentHTML('beforeend','<p class="micro">Reload the page, or run the included local Python launcher.</p>');}
