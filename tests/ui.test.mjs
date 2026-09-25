@@ -7,7 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('..',import.meta.url));
 const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
-const app=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*?;\n/,'');
+const app=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*?;\r?\n/,'');
 const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
 class PythonClient {
   constructor(){this.mode='local';}
