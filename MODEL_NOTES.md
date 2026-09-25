@@ -60,9 +60,9 @@ For As, the existing provisional local incorporation response gives
 `BEP_new/BEP_current = [(y_target R_target)/(y_current R_current)]^(1/n)`.
 
 The measured fifth-degree BEP polynomial is inverted by bisection within
-As valve 30–270. Each partial step interpolates the physical valve or temperature.
+the active measured valve range (originally As 30–270). Each partial step interpolates the physical valve or temperature.
 The applied prediction recomputes rates and composition using those actual
-settings. P stays fixed; the P 5–80 fit supports reporting and a separate
+settings. P stays fixed; the active P fit (originally valve 5–80) supports reporting and a separate
 forward/inverse converter. It is not used to infer a new incorporation law.
 
 ## Data and limitations
@@ -84,3 +84,32 @@ Scope: coherent bulk-like direct-Gamma emission, measurement temperatures
 propagated by a local Jacobian; reference, source, BEP-fit and material-model
 uncertainties are excluded. Exact source limits and settling times are not
 modeled. This is not a reproduction of the lab's proprietary Q CAL algorithm.
+
+## User refitting in v2.1
+
+`qlayer/calibration.py` implements unweighted degree-five least squares with
+all six powers. Valve values are mapped to [-1, 1]; pressures are scaled by their
+maximum. Householder QR solves the Vandermonde least-squares problem without
+forming normal equations. The normalized polynomial is transformed back to the
+existing ascending a0…a5 coefficient convention in microtorr. A grid comparison
+checks that the raw-power representation retains numerical precision. This
+implementation uses only the Python standard library, including in Pyodide.
+
+A profile records both sources' raw measurements, coefficients and measured
+ranges. The server/worker receives the active profile with each request; there
+is no mutable process-global user calibration. A file load validates both
+sources before the UI replaces either one. Fit failures retain the active
+calibration. Editing a draft during fitting prevents that stale fit being applied.
+
+Only finite positive pressures and nonnegative finite valve values are accepted.
+At least six distinct valve values are required. Duplicate valves are repeated,
+equally weighted measurements. Curves must be positive and have positive slope
+throughout the measured range, checked at endpoints and derivative extrema.
+Range endpoints must equal the minimum and maximum recorded measurements.
+No extrapolation or automatic lower-order fallback is performed.
+
+R², RMS residual and maximum relative residual summarize agreement with the
+measurements, not predictive uncertainty. Six rows leave zero residual degrees
+of freedom. A high R² does not prove reproducibility or validate incorporation.
+The fitting controls do not alter the provisional relation between BEP and
+incorporated As, and P remains fixed in recipe corrections.

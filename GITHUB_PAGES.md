@@ -1,39 +1,43 @@
-# Update your GitHub Pages app
+# Update your existing GitHub Pages app
 
-This package keeps Python as the scientific core while supporting static
-GitHub Pages through bundled Pyodide. No paid Python hosting service is needed.
+There are two packages. Choose the instructions matching your current repository.
+No repository deletion is needed.
 
-1. Extract the ZIP and copy its contents into your `q-layer-tuner` repository's
-   root. Include the `qlayer`, `dist`, `tools`, `tests`, and `.github` folders,
-   plus the root files. Preserve your repository's `.git` directory. Remove the
-   retired `dist/engine.js`, `dist/parameters.json`, and `tests/engine.test.mjs`
-   if they remain from v1; v2 does not load them.
-2. Check that `.github/workflows/pages.yml` is present. If your existing Pages
-   workflow already deploys the site, replace it with this workflow to avoid
-   two workflows publishing competing builds.
-3. Commit and push to `main`. If your default branch has a different name,
-   update the workflow's `on.push.branches` entry first.
-4. In the repository, select **Settings → Pages → Build and deployment →
-   Source → GitHub Actions**.
-5. Run the **Deploy Q Layer Tuner** workflow from the Actions tab if a run has
-   not started. Wait for the build and deploy jobs to finish. The deploy job
-   reports the published address. For the existing repository, it is normally
-   `https://xuanyizh.github.io/q-layer-tuner/`.
+## If index.html is at the repository's top level
 
-The workflow tests the Python core, copies it into the static distribution, and
-uploads only `dist/`. All app paths are relative, so a project subdirectory works.
-Node is used for UI/runtime checks, not for a second physics implementation.
-Do not use a branch deployment of the repository root: the HTML entrypoint is
-inside `dist/`, and the workflow is configured accordingly.
+Use **Q_Layer_Tuner_v2.1_GitHub_Upload.zip**.
 
-After changing any Python code, push the canonical `qlayer` files; the workflow
-rebuilds the browser copy. Include the bundled `dist/vendor/pyodide` files intact.
-Their licenses are included. The website must serve `.wasm` as
-`application/wasm`; GitHub Pages supports Pyodide static deployment.
+1. Extract that ZIP.
+2. In the existing repository choose Code → Add file → Upload files.
+3. Upload all contents of the extracted folder, including `python`, `vendor`,
+   and `.nojekyll`, at the repository's top level. Upload the contents, not the
+   outer folder or ZIP. Commit the changes.
+4. Keep the existing working deployment settings. This layout supports either
+   main + /(root) branch deployment or the Static HTML workflow publishing `.`.
+5. Wait for deployment to succeed, reload the website, and check the v2.1 badge.
+   Calibration now contains separate As and P measured-pair entry boxes.
 
-Official references checked for this package:
-- https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
-- https://pyodide.org/en/0.27.7/usage/downloading-and-deploying.html
+## If the repository contains dist/index.html and qlayer/engine.py
 
-Your GitHub repository is not automatically updated by downloading this ZIP.
-The app's separately hosted preview is updated independently.
+Use the updated full Python source package.
+
+1. Extract it and upload the contents of its Q_Layer_Tuner_v2.1 folder into the
+   repository's top level, replacing matching files. Include the new
+   `qlayer/calibration.py` and `dist/python/qlayer/calibration.py`.
+2. Keep the existing working workflow that publishes `dist/`.
+   The included `.github/workflows/pages.yml` builds the browser copy, runs the
+   checks, and uploads `dist/`. Do not add a competing root-folder deployment.
+3. With that workflow, Settings → Pages → Source should be GitHub Actions.
+4. Commit/push to main and wait for the build/deploy jobs to succeed.
+
+If GitHub Pages shows README text instead of the app, its published folder has
+no index.html. Use the ready-upload layout, or fix the source workflow to publish
+dist/. The source package's root README is documentation, not the website.
+
+The Python core runs in the browser with bundled Pyodide. No Python web service,
+Anaconda, Django, PyPI release, or package installation is required for hosting.
+All website asset paths are relative, including the new calibration module.
+
+Calibration JSON files downloaded through the app are user data, not code updates.
+Loading them changes the current session's calibration. It does not commit files
+to GitHub or change other users' calibrations.

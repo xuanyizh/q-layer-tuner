@@ -37,8 +37,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.reply(403, {'error': 'Cross-origin requests are not accepted.'})
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if not 0 < length <= 65536:
-                raise InputError('Request must contain at most 64 KiB of JSON.')
+            if not 0 < length <= 1048576:
+                raise InputError('Request must contain at most 1 MiB of JSON.')
             payload = json.loads(self.rfile.read(length))
             return self.reply(200, {'result': dispatch(payload)})
         except (InputError, ValueError, TypeError, OverflowError) as error:
