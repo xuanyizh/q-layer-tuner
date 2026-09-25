@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "model": "BEP_Torr = 1e-6 * sum(a_j * valve**j, j=0..5)",
+  "source_data": "User-provided BEP versus valve measurements",
+  "limitations": [
+    "Only interpolate within measured valve ranges.",
+    "Residuals describe fit agreement, not measurement or prediction uncertainty.",
+    "Reservoir/cracker settings, gauge calibration and measurement geometry were not supplied.",
+    "BEP curves do not alone determine As/P incorporation or alloy composition."
+  ],
+  "sources": {
+    "As": {
+      "source": "As",
+      "degree": 5,
+      "powers_descending": [
+        5,
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "valve_units": "native instrument setting; no percent conversion assumed",
+      "valid_valve_range": [
+        30.0,
+        270.0
+      ],
+      "bep_units": "Torr (assumed for supplied data)",
+      "raw_coefficients_ascending_microtorr": [
+        -0.16616666666665458,
+        0.016632156177155858,
+        -0.0001888671976171941,
+        2.3033756367089505e-06,
+        -1.0621528677084176e-08,
+        1.756885090218417e-11
+      ],
+      "raw_coefficients_descending_microtorr": [
+        1.756885090218417e-11,
+        -1.0621528677084176e-08,
+        2.3033756367089505e-06,
+        -0.0001888671976171941,
+        0.016632156177155858,
+        -0.16616666666665458
+      ],
+      "raw_coefficients_descending_torr": [
+        1.756885090218417e-17,
+        -1.0621528677084177e-14,
+        2.3033756367089505e-12,
+        -1.888671976171941e-10,
+        1.663215617715586e-08,
+        -1.6616666666665457e-07
+      ],
+      "normalized_variable": "u=(valve-center)/scale",
+      "center": 150.0,
+      "scale": 120.0,
+      "normalized_coefficients_ascending_microtorr": [
+        1.8100233100233103,
+        1.9836442890442887,
+        0.09639627039627013,
+        -0.20139860139860327,
+        0.5298275058275073,
+        0.43716923076922926
+      ],
+      "fit_method": "unweighted ordinary least squares; centered/scaled polynomial basis",
+      "r_squared": 0.9998069478365443,
+      "rmse_torr": 1.927548750471484e-08,
+      "max_absolute_residual_torr": 4.0023310023310274e-08,
+      "max_absolute_relative_residual_percent": 2.2612039561192248,
+      "minimum_derivative_microtorr_per_valve": 0.010080883014843382,
+      "increasing_on_valid_range": true,
+      "fit_bep_range_torr": [
+        2.1683216783217296e-07,
+        4.655662004662002e-06
+      ],
+      "measurements": [
+        {
+          "valve": 30.0,
+          "bep_torr": 2.1999999999999998e-07,
+          "fitted_bep_torr": 2.1683216783217296e-07,
+          "residual_fit_minus_measured_torr": -3.1678321678270393e-09,
+          "relative_residual_percent": -1.4399237126486542
+        },
+        {
+          "valve": 60.0,
+          "bep_torr": 5.14e-07,
+          "fitted_bep_torr": 5.253764568764587e-07,
+          "residual_fit_minus_measured_torr": 1.1376456876458718e-08,
+          "relative_residual_percent": 2.2133184584550034
+        },
+        {
+          "valve": 90.0,
+          "bep_torr": 8.93e-07,
+          "fitted_bep_torr": 8.869277389277397e-07,
+          "residual_fit_minus_measured_torr": -6.072261072260332e-09,
+          "relative_residual_percent": -0.679984442582344
+        },
+        {
+          "valve": 120.0,
+          "bep_torr": 1.35e-06,
+          "fitted_bep_torr": 1.3249265734265738e-06,
+          "residual_fit_minus_measured_torr": -2.507342657342626e-08,
+          "relative_residual_percent": -1.8572908572908342
+        },
+        {
+          "valve": 150.0,
+          "bep_torr": 1.77e-06,
+          "fitted_bep_torr": 1.8100233100233102e-06,
+          "residual_fit_minus_measured_torr": 4.0023310023310274e-08,
+          "relative_residual_percent": 2.2612039561192248
+        },
+        {
+          "valve": 180.0,
+          "bep_torr": 2.32e-06,
+          "fitted_bep_torr": 2.311308857808858e-06,
+          "residual_fit_minus_measured_torr": -8.691142191141753e-09,
+          "relative_residual_percent": -0.37461819789404116
+        },
+        {
+          "valve": 210.0,
+          "bep_torr": 2.87e-06,
+          "fitted_bep_torr": 2.8475454545454543e-06,
+          "residual_fit_minus_measured_torr": -2.2454545454545724e-08,
+          "relative_residual_percent": -0.7823883433639626
+        },
+        {
+          "valve": 240.0,
+          "bep_torr": 3.5199999999999998e-06,
+          "fitted_bep_torr": 3.5383974358974348e-06,
+          "residual_fit_minus_measured_torr": 1.839743589743481e-08,
+          "relative_residual_percent": 0.5226544289043981
+        },
+        {
+          "valve": 270.0,
+          "bep_torr": 4.66e-06,
+          "fitted_bep_torr": 4.655662004662002e-06,
+          "residual_fit_minus_measured_torr": -4.337995337998279e-09,
+          "relative_residual_percent": -0.09309002871240943
+        }
+      ]
+    },
+    "P": {
+      "source": "P",
+      "degree": 5,
+      "powers_descending": [
+        5,
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "valve_units": "native instrument setting; no percent conversion assumed",
+      "valid_valve_range": [
+        5.0,
+        80.0
+      ],
+      "bep_units": "Torr (assumed for supplied data)",
+      "raw_coefficients_ascending_microtorr": [
+        -0.10351403407723225,
+        0.11202920235910502,
+        0.026940506273827984,
+        -0.0008645181786825931,
+        1.193629761361735e-05,
+        -5.9340933755735035e-08
+      ],
+      "raw_coefficients_descending_microtorr": [
+        -5.9340933755735035e-08,
+        1.193629761361735e-05,
+        -0.0008645181786825931,
+        0.026940506273827984,
+        0.11202920235910502,
+        -0.10351403407723225
+      ],
+      "raw_coefficients_descending_torr": [
+        -5.934093375573504e-14,
+        1.1936297613617349e-11,
+        -8.645181786825931e-10,
+        2.694050627382798e-08,
+        1.1202920235910501e-07,
+        -1.0351403407723225e-07
+      ],
+      "normalized_variable": "u=(valve-center)/scale",
+      "center": 42.5,
+      "scale": 37.5,
+      "normalized_coefficients_ascending_microtorr": [
+        17.668285577617027,
+        15.545368836112775,
+        0.7321291888351025,
+        4.894108576315606,
+        -1.3321707902242117,
+        -4.400588044019655
+      ],
+      "fit_method": "unweighted ordinary least squares; centered/scaled polynomial basis",
+      "r_squared": 0.9999792717242217,
+      "rmse_torr": 4.9706781680916653e-08,
+      "max_absolute_residual_torr": 9.02606790253797e-08,
+      "max_absolute_relative_residual_percent": 3.9752129110293133,
+      "minimum_derivative_microtorr_per_valve": 0.11627545497959174,
+      "increasing_on_valid_range": true,
+      "fit_bep_range_torr": [
+        1.0293546078191902e-06,
+        3.310713334463664e-05
+      ],
+      "measurements": [
+        {
+          "valve": 5.0,
+          "bep_torr": 9.9e-07,
+          "fitted_bep_torr": 1.0293546078191902e-06,
+          "residual_fit_minus_measured_torr": 3.93546078191902e-08,
+          "relative_residual_percent": 3.9752129110293133
+        },
+        {
+          "valve": 10.0,
+          "bep_torr": 3.0499999999999996e-06,
+          "fitted_bep_torr": 2.95973932097462e-06,
+          "residual_fit_minus_measured_torr": -9.02606790253797e-08,
+          "relative_residual_percent": -2.9593665254222854
+        },
+        {
+          "valve": 15.0,
+          "bep_torr": 5.28e-06,
+          "fitted_bep_torr": 5.280002104985502e-06,
+          "residual_fit_minus_measured_torr": 2.104985502349166e-12,
+          "relative_residual_percent": 3.98671496657039e-05
+        },
+        {
+          "valve": 20.0,
+          "bep_torr": 7.63e-06,
+          "fitted_bep_torr": 7.717043723335739e-06,
+          "residual_fit_minus_measured_torr": 8.704372333573839e-08,
+          "relative_residual_percent": 1.1408089559074495
+        },
+        {
+          "valve": 30.0,
+          "bep_torr": 1.24e-05,
+          "fitted_bep_torr": 1.2388243235476778e-05,
+          "residual_fit_minus_measured_torr": -1.1756764523221718e-08,
+          "relative_residual_percent": -0.0948126171227558
+        },
+        {
+          "valve": 40.0,
+          "bep_torr": 1.67e-05,
+          "fitted_bep_torr": 1.6633710936998926e-05,
+          "residual_fit_minus_measured_torr": -6.628906300107218e-08,
+          "relative_residual_percent": -0.3969404970124083
+        },
+        {
+          "valve": 50.0,
+          "bep_torr": 2.08e-05,
+          "fitted_bep_torr": 2.0842257719565067e-05,
+          "residual_fit_minus_measured_torr": 4.2257719565068186e-08,
+          "relative_residual_percent": 0.20316211329359704
+        },
+        {
+          "valve": 60.0,
+          "bep_torr": 2.5399999999999997e-05,
+          "fitted_bep_torr": 2.5419041081830973e-05,
+          "residual_fit_minus_measured_torr": 1.9041081830973637e-08,
+          "relative_residual_percent": 0.07496488909832141
+        },
+        {
+          "valve": 70.0,
+          "bep_torr": 3.01e-05,
+          "fitted_bep_torr": 3.007347392437647e-05,
+          "residual_fit_minus_measured_torr": -2.6526075623529265e-08,
+          "relative_residual_percent": -0.08812649708813709
+        },
+        {
+          "valve": 80.0,
+          "bep_torr": 3.31e-05,
+          "fitted_bep_torr": 3.310713334463664e-05,
+          "residual_fit_minus_measured_torr": 7.133344636642391e-09,
+          "relative_residual_percent": 0.02155089014091357
+        }
+      ]
+    }
+  }
+}
