@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "profile_name": "Minch-gap / Vurgaftman-strain baseline v1",
+  "reference_temperature_K": 300,
+  "conventions": {
+    "composition": "InGaAsP: x=Ga, y=As. AlGaInAs: x=Ga, y=Al. Fractions normalized separately on group III and V sublattices.",
+    "av": "Positive here, for electron valence-edge shift av*Tr(epsilon). Sign converted from Vurgaftman table convention.",
+    "elastic_units": "GPa. Only C12/C11 enters this model; values converted to physical GPa (e.g. GaAs C11=122.1).",
+    "scope": "Coherent (001) on InP, near room temperature, direct Γ emission. Hybrid baseline, not the complete original Minch numerical parameter set."
+  },
+  "gap_polynomials_300K": {
+    "InGaAsP": [1.35, 0.668, -1.17, 0.758, 0.18, -0.069, -0.322, 0.03],
+    "AlGaInAs": [0.36, 0.629, 2.093, 0.436, 0.577, 1.013, -2.0]
+  },
+  "binaries": {
+    "GaAs": {"a300_A": 5.65325, "da_dT_A_K": 0.0000388, "C11_GPa": 122.1, "C12_GPa": 56.6, "ac_eV": -7.17, "av_eV": 1.16, "b_eV": -2.0, "delta_so_eV": 0.341, "temperature_model": "varshni", "Eg0_eV": 1.519, "varshni_alpha_eV_K": 0.0005405, "varshni_beta_K": 204},
+    "AlAs": {"a300_A": 5.6611, "da_dT_A_K": 0.0000290, "C11_GPa": 125.0, "C12_GPa": 53.4, "ac_eV": -5.64, "av_eV": 2.47, "b_eV": -2.3, "delta_so_eV": 0.28, "temperature_model": "varshni", "Eg0_eV": 3.099, "varshni_alpha_eV_K": 0.000885, "varshni_beta_K": 530},
+    "InAs": {"a300_A": 6.0583, "da_dT_A_K": 0.0000274, "C11_GPa": 83.29, "C12_GPa": 45.26, "ac_eV": -5.08, "av_eV": 1.00, "b_eV": -1.8, "delta_so_eV": 0.39, "temperature_model": "varshni", "Eg0_eV": 0.417, "varshni_alpha_eV_K": 0.000276, "varshni_beta_K": 93},
+    "GaP": {"a300_A": 5.4505, "da_dT_A_K": 0.0000292, "C11_GPa": 140.5, "C12_GPa": 62.03, "ac_eV": -8.2, "av_eV": 1.7, "b_eV": -1.6, "delta_so_eV": 0.08, "temperature_model": "bose_einstein", "Eg0_eV": 2.886, "bose_amplitude_eV": 0.1081, "bose_temperature_K": 164},
+    "InP": {"a300_A": 5.8697, "da_dT_A_K": 0.0000279, "C11_GPa": 101.1, "C12_GPa": 56.1, "ac_eV": -6.0, "av_eV": 0.6, "b_eV": -2.0, "delta_so_eV": 0.108, "temperature_model": "varshni", "Eg0_eV": 1.4236, "varshni_alpha_eV_K": 0.000363, "varshni_beta_K": 162}
+  },
+  "sources": [
+    {"key": "Minch1999", "doi": "10.1109/3.760325", "use": "300 K relaxed-gap polynomial baseline and bulk-strain framework"},
+    {"key": "Vurgaftman2001", "doi": "10.1063/1.1368156", "use": "Tables I, II, III, IV, VI: binary lattice, elastic, deformation, spin-orbit and temperature parameters"},
+    {"key": "Yong2010", "doi": "10.1007/s00340-010-4000-3", "use": "HH/LH/SO mixing expressions, Eqs. 11–12; no adoption of their refitted gap coefficients"},
+    {"key": "Kolesov2019", "doi": "10.1039/C9CP00122K", "url": "https://arxiv.org/html/1805.00455v1", "use": "Independent published transcription of both relaxed-gap polynomials, Eqs. 4 and 7 of preprint"},
+    {"key": "Zyskowski2023", "doi": "10.1063/5.0173760", "use": "Approximate PL relation EPL=Eg+kBT/2 and evidence that alloy-gap coefficients need calibration"}
+  ]
+}
