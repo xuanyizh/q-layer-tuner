@@ -1,4 +1,4 @@
-# Q Layer Tuner 2.0 — Python core
+# Q Layer Tuner 2.1 — measured calibration fitting
 
 A web interface for estimating source adjustments for coherent, bulk-like
 InGaAsP on InP (001), using measured PL, symmetric 004 XRD and an independently
@@ -15,22 +15,65 @@ known In or Ga incorporated rate. No growth hardware is controlled.
 No pip packages, NumPy, Node or internet connection are required for local use.
 Do not open `dist/index.html` directly with a file URL.
 
-## What changed
+## Enter new As or P calibration data
 
-- The scientific implementation is now `qlayer/engine.py`, using only Python's
-  standard library. JavaScript handles the interface and transport.
-- As and P use your measured, full fifth-degree valve-to-BEP fits, including
-  powers 5, 4, 3, 2, 1 and 0. All coefficients are editable in Calibration.
-- The **Bandgap strain correction** selector offers **Off — bulk bandgap
-  estimate** (default) and **On — strain-corrected bandgap**.
-- Coherent elastic strain in XRD remains active in both modes. The optical
-  reference is anchored separately in the selected mode.
-- The As recommendation converts the requested BEP through the new fit's bounded
-  inverse. An optional P valve reports its BEP; P remains fixed for this recipe
-  correction. Both curves have a standalone forward/inverse converter and plots.
-- The hosted version runs the same Python package through bundled Pyodide 0.27.7
-  in a worker. No Python server is needed for GitHub Pages. The native launcher
-  instead sends calculations to Python on your own computer.
+1. Open the **Calibration** tab and find **As & P valve calibrations**.
+2. In the As or P section, paste measured pairs into the box, or load a CSV,
+   TSV or text file. Select the BEP column units before fitting.
+3. Click **Fit & use As curve** or **Fit & use P curve**. The Python core fits
+   all powers 5, 4, 3, 2, 1 and 0 by unweighted least squares.
+4. Review the plotted points/curve, R², RMSE and residual table. A successful
+   fit updates the coefficients, measured valve range, converter and recipe.
+5. Click **Save calibrations JSON** to keep both active curves. After reloading,
+   use **Load saved calibrations JSON** to restore them.
+
+Example with **Torr** selected (your original As data):
+
+```text
+Valve, BEP
+30, 0.22e-6
+60, 0.514e-6
+90, 0.893e-6
+120, 1.35e-6
+150, 1.77e-6
+180, 2.32e-6
+210, 2.87e-6
+240, 3.52e-6
+270, 4.66e-6
+```
+
+With **10⁻⁶ Torr** selected, enter `30, 0.22`, `60, 0.514`, etc. Do not also
+include `e-6` in that mode. Two-column paste from Excel uses tabs and is accepted.
+Comma, whitespace or `=` can separate the two columns. Newlines or semicolons
+separate pairs. An optional first header containing Valve and BEP is accepted.
+Use a decimal point, not a decimal comma. Comment text after `#` is ignored.
+
+Provide 6–200 rows with at least 6 distinct, nonnegative valve settings and
+positive pressures. Repeated valve settings count as separate, equally weighted
+measurements. Six points give no residual degrees of freedom: a perfect fit then
+is not independent evidence of calibration accuracy.
+
+Draft edits do not change active calculations until Fit & use succeeds. Curves
+that turn downward, predict nonpositive BEP, or cannot be fitted stably are not
+applied. A mathematically fitted but unusable curve can still be inspected; the
+previous active calibration is retained. The valid range is the smallest to
+largest measured valve for each active source; extrapolation remains disabled.
+
+Calibration changes are **session-only** until you download the JSON file.
+That file contains both sources' applied coefficients and measurements, including
+manual coefficient changes. Unfitted draft text is not saved. No calibration is
+written into your GitHub repository or onto the local server automatically.
+**Reset recipe** preserves the active calibration; each **Restore original**
+button restores that source's built-in data, coefficients and range.
+
+## What changed from v2.0
+
+- Added raw As/P pair entry, text/CSV/TSV loading, Python degree-five refitting,
+  diagnostics, JSON save/load and independent restoration of each source.
+- Calibration ranges and plotted reference data now follow the active dataset.
+- Existing composition inference, optical strain switch, source-temperature
+  correction and provisional As incorporation model are unchanged.
+- The same Python core serves the local launcher and the bundled browser runtime.
 
 ## Your current example
 
@@ -63,7 +106,7 @@ instrument's native numerical units; no conversion to percent is assumed.
 | 1 | 1.663215617715586e-2 | 1.120292023591050e-1 |
 | 0 | -1.661666666666546e-1 | -1.035140340772323e-1 |
 
-Valid ranges: **As 30–270**, **P 5–80**. Extrapolation is disabled. Edited curves
+Built-in ranges: **As 30–270**, **P 5–80**. New fits use their own measured ranges. Extrapolation is disabled. Edited curves
 must be positive and strictly increasing over the full measured range.
 The fit R² values are 0.99980695 (As) and 0.99997927 (P); maximum absolute
 relative residuals at the measurements are 2.26% and 3.98%. These residuals are
@@ -95,6 +138,30 @@ returns `asError`, retains In/Ga results, and suppresses the As recommendation
 and applied prediction. A missing P valve is `None`, not zero. An invalid P
 valve generates a notice and no P BEP, while the fixed-P recipe assumption remains.
 
+## Fit and use a calibration from Python
+
+```python
+import copy
+import json
+from qlayer import calculate, fit_calibration, validate_profile
+from qlayer.engine import CALIBRATION
+
+profile = copy.deepcopy(CALIBRATION)
+with open("new_as_measurements.txt") as handle:
+    fit = fit_calibration("As", text=handle.read(), unit="torr")
+if not fit["usable"]:
+    raise ValueError(fit["summary"]["validationError"])
+profile["sources"]["As"] = fit["record"]
+profile = validate_profile(profile)["profile"]
+result = calculate({"asValve": 100}, calibrations=profile)
+with open("my_calibrations.json", "w") as handle:
+    json.dump(profile, handle, indent=2)
+```
+
+The `calibrations=` profile supplies coefficients and measured ranges. Explicit
+`asC0`…`asC5` / `pC0`…`pC5` values in `settings` override the profile's coefficients,
+so omit those settings when you want to use the fitted coefficients directly.
+
 ## Scientific scope
 
 See `MODEL_NOTES.md` for the equations and assumptions. In particular, **BEP
@@ -113,7 +180,7 @@ bulk direct-gap estimate, not a quantum-well or partially relaxed film model.
 Canonical Python files are under `qlayer/`. Run `python tools/build.py` after
 changing them; this copies them into `dist/python/qlayer/` for static hosting.
 The local launcher performs this copy automatically. Change defaults or permanent
-calibrations in the canonical files. Form edits last until reload/reset.
+calibrations in the canonical files. Recipe inputs reset on reload. Calibration edits can be saved/loaded as JSON.
 
 Run the checks with Python and Node 20+ available:
 
@@ -127,8 +194,9 @@ node --test tests/*.test.mjs
 48 original Python forward fixtures, both optical modes, full/zero correction,
 axis/sign/zero equivalence, inverse recovery, bounded BEP conversion, invalid
 inputs, native HTTP endpoints, UI wiring and the actual bundled WebAssembly
-Python runtime. The DOM harness and Node runtime check are not visual browser QA.
-A real-browser visual check was unavailable in this execution environment.
+Python runtime, including refitting, JSON restoration and asynchronous UI changes. The DOM harness and Node runtime check are not visual browser QA.
+The browser environment blocked access to the local preview, so visual browser QA
+was unavailable; DOM interaction tests and the actual browser Python runtime passed.
 
 For GitHub Pages, follow `GITHUB_PAGES.md`; the included workflow builds and
 publishes `dist/`. The browser runtime is bundled locally and makes the source

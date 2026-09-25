@@ -3,7 +3,7 @@ import { loadPyodide } from './vendor/pyodide/pyodide.mjs';
 const ready = (async () => {
   const py = await loadPyodide({indexURL: new URL('./vendor/pyodide/', import.meta.url).href});
   py.FS.mkdirTree('/app/qlayer');
-  for (const name of ['__init__.py', 'engine.py', 'parameters.json', 'bep_calibration.json']) {
+  for (const name of ['__init__.py', 'engine.py', 'calibration.py', 'parameters.json', 'bep_calibration.json']) {
     const response = await fetch(new URL('./python/qlayer/' + name, import.meta.url));
     if (!response.ok) throw new Error('Unable to load calculation file: ' + name);
     py.FS.writeFile('/app/qlayer/' + name, await response.text());

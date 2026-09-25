@@ -6,7 +6,7 @@ export class PythonClient {
     try {
       const response = await fetch('./api/health', {signal: AbortSignal.timeout(1800)});
       const health = response.ok ? await response.json() : null;
-      if (health?.service === 'q-layer-python' && health?.version === '2.0.0') this.mode = 'local';
+      if (health?.service === 'q-layer-python' && health?.version === '2.1.0') this.mode = 'local';
     } catch { /* Static hosting: use bundled browser Python. */ }
     if (!this.mode) {
       this.mode = 'browser';
