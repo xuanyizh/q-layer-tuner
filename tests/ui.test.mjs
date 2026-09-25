@@ -19,8 +19,8 @@ class PythonClient {
     return body.result;
   }
 }
-async function harness(){
- const nodes=new Map(),registry=new Map();
+async function harness(options={}){
+ const nodes=new Map(),registry=new Map(),downloads=[];
  function add(markup){
   for(const match of markup.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){
    assert.ok(!nodes.has(match[1]),'Duplicate element '+match[1]);
@@ -34,9 +34,10 @@ async function harness(){
  }
  add(html);
  nodes.get('convert-source').value='As';nodes.get('convert-direction').value='valve_to_bep';
- const document={getElementById:id=>{assert.ok(nodes.has(id),'Missing element '+id);return nodes.get(id)},modelContext:{registerTool(tool){registry.set(tool.name,tool)}}};
- await new AsyncFunction('document','window','PythonClient',app)(document,{addEventListener(){}},PythonClient);
- return {nodes,registry};
+ const document={body:{appendChild(){}},createElement(){return {click(){downloads.push({url:this.href,name:this.download})},remove(){}}},getElementById:id=>{assert.ok(nodes.has(id),'Missing element '+id);return nodes.get(id)},modelContext:{registerTool(tool){registry.set(tool.name,tool)}}};
+ class HarnessClient extends PythonClient {async request(payload){const result=await super.request(payload);if(payload.action==='fit_calibration'&&options.pauseFit)await options.pauseFit();if(payload.action==='convert_bep'&&options.pauseConversion)await options.pauseConversion();return result;}}
+ await new AsyncFunction('document','window','PythonClient',app)(document,{addEventListener(){}},HarnessClient);
+ return {nodes,registry,downloads};
 }
 test('GUI initializes Python, toggles strain, edits coefficients and recovers from errors',async()=>{
  const {nodes:n}=await harness();
@@ -76,4 +77,73 @@ test('static wiring contains Python assets and no parallel JS scientific engine'
  for(const m of html.matchAll(/for="([^"]+)"/g))assert.ok(html.includes(`id="${m[1]}"`));
  assert.ok(!app.includes("'./engine.js'"));
  assert.ok(!html.includes('http://terminal.local'));
+});
+
+const linearText=Array.from({length:10},(_,i)=>{const v=40+20*i;return `${v}, ${(.25+.012*v)*1e-6}`}).join('\n');
+const uploadedFile=(name,text)=>({name,size:text.length,text:async()=>text});
+test('measured fit applies a new range; rejected fits retain it and reset recipe preserves it',async()=>{
+ const {nodes:n,registry}=await harness();
+ const field=n.get('cal-as-data');field.value=linearText;field.dispatch('input');
+ assert.match(n.get('cal-as-status').textContent,/Unfitted draft/);
+ await n.get('cal-as-fit').dispatch('click');
+ assert.match(n.get('cal-as-status').textContent,/Applied As fit/);
+ assert.equal(n.get('as-range').textContent,'40–220');
+ const r=registry.get('get_q_layer_result').execute();
+ assert.deepEqual(r.calibrations.As.range,[40,220]);
+ const expected=(r.sourceSettings.As.current===100);
+ assert.equal(expected,true);
+ const curve=n.get('asC0').value,applied=n.get('source-cards').innerHTML;
+ field.value='1, 1e-6';field.dispatch('input');await n.get('cal-as-fit').dispatch('click');
+ assert.match(n.get('cal-as-status').textContent,/Not applied/);assert.equal(n.get('asC0').value,curve);
+ assert.equal(n.get('source-cards').innerHTML,applied);
+ field.value=Array.from({length:7},(_,i)=>`${10+i*10}, ${(100-i*10)*1e-6}`).join('\n');
+ field.dispatch('input');await n.get('cal-as-fit').dispatch('click');
+ assert.match(n.get('cal-as-status').textContent,/must increase/);assert.equal(n.get('asC0').value,curve);
+ await n.get('reset').dispatch('click');assert.equal(n.get('asC0').value,curve);assert.equal(n.get('as-range').textContent,'40–220');
+ n.get('convert-value').value='30';await n.get('convert-button').dispatch('click');assert.match(n.get('convert-result').textContent,/40–220/);
+});
+test('calibration JSON download and load preserve both fitted data and manual coefficients',async()=>{
+ const {nodes:n,downloads}=await harness();
+ n.get('cal-as-data').value=linearText;await n.get('cal-as-fit').dispatch('click');
+ n.get('asC0').value='.5';n.get('recipe-form').dispatch('input',n.get('asC0'));await n.get('recipe-form').dispatch('submit');
+ await n.get('cal-save').dispatch('click');assert.equal(downloads.length,1);
+ const text=await (await fetch(downloads[0].url)).text(),profile=JSON.parse(text);
+ assert.equal(profile.sources.As.raw_coefficients_ascending_microtorr[0],.5);
+ assert.equal(profile.sources.As.measurements.length,10);
+ await n.get('cal-as-reset').dispatch('click');assert.equal(n.get('as-range').textContent,'30–270');
+ n.get('cal-load').files=[uploadedFile('saved.json',text)];await n.get('cal-load').dispatch('change');
+ assert.equal(n.get('asC0').value,'0.5');assert.equal(n.get('as-range').textContent,'40–220');
+ assert.match(n.get('cal-profile-status').textContent,/Both calibrations loaded/);
+ profile.sources.P.valid_valve_range=[1,1000];n.get('cal-load').files=[uploadedFile('bad.json',JSON.stringify(profile))];
+ await n.get('cal-load').dispatch('change');assert.match(n.get('cal-profile-status').textContent,/Not loaded/);
+ assert.equal(n.get('asC0').value,'0.5');assert.equal(n.get('p-range').textContent,'optional · 5–80');
+});
+test('measurement text file and selected microtorr units feed Python independently of recipe validity',async()=>{
+ const {nodes:n}=await harness();
+ const text='Valve,BEP\n'+Array.from({length:8},(_,i)=>`${10+i*10}, ${1+i*.4}`).join('\n');
+ n.get('cal-p-file').files=[uploadedFile('new-p.csv',text)];await n.get('cal-p-file').dispatch('change');
+ assert.equal(n.get('cal-p-data').value,text);
+ n.get('cal-p-unit').value='microtorr';n.get('cal-p-unit').dispatch('change');
+ n.get('targetRate').value='0';await n.get('cal-p-fit').dispatch('click');
+ assert.match(n.get('cal-p-status').textContent,/Applied P fit/);assert.equal(n.get('error').hidden,false);
+ n.get('convert-source').value='P';n.get('convert-value').value='10';await n.get('convert-button').dispatch('click');
+ assert.match(n.get('convert-result').textContent,/1.000000/);
+});
+test('editing draft while a fit is pending discards the stale fit',async()=>{
+ let release,started;const gate=new Promise(resolve=>release=resolve),signal=new Promise(resolve=>started=resolve);
+ const {nodes:n}=await harness({pauseFit:()=>{started();return gate}});
+ const before=n.get('asC0').value;
+ n.get('cal-as-data').value=linearText;const pending=n.get('cal-as-fit').dispatch('click');
+ await signal;n.get('cal-as-data').value='40, 2e-6';n.get('cal-as-data').dispatch('input');
+ release();await pending;
+ assert.equal(n.get('asC0').value,before);assert.equal(n.get('as-range').textContent,'30–270');
+ assert.match(n.get('cal-as-status').textContent,/Unfitted draft/);assert.equal(n.get('cal-as-fit').disabled,false);
+});
+
+test('pending conversion cannot display an old calibration result after refit',async()=>{
+ let release,started;const gate=new Promise(resolve=>release=resolve),signal=new Promise(resolve=>started=resolve);
+ const {nodes:n}=await harness({pauseConversion:()=>{started();return gate}});
+ const pending=n.get('convert-button').dispatch('click');await signal;
+ n.get('cal-as-data').value=linearText;await n.get('cal-as-fit').dispatch('click');
+ release();await pending;assert.match(n.get('convert-result').textContent,/Calibration updated/);
 });
