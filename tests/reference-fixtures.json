@@ -1,0 +1,726 @@
+{
+  "source": "Supplied III_V_Composition_Web_v1.0 Python model, PL correction none",
+  "source_sha256": "ba21aae31c4589e83adddef3ad49353e1d6b983ff84f4cd64738a70d07f9a981",
+  "cases": [
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.1654266209564796,
+        "PL_reported_nm": 1063.8524657300597,
+        "mismatch_reported_arcsec": 21.324819487737443,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 8.183003537265421e-05,
+        "HH_LH_splitting_meV": 0.6541177329951666
+      }
+    },
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.1654266209564796,
+        "PL_reported_nm": 1063.8524657300597,
+        "mismatch_reported_arcsec": 42.649638975474886,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 8.183003537265421e-05,
+        "HH_LH_splitting_meV": 0.6541177329951666
+      }
+    },
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.1588194992970486,
+        "PL_reported_nm": 1069.9181236457473,
+        "mismatch_reported_arcsec": 21.324819487737443,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 8.083519625357027e-05,
+        "HH_LH_splitting_meV": 0.6461505518991632
+      }
+    },
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.1588194992970486,
+        "PL_reported_nm": 1069.9181236457473,
+        "mismatch_reported_arcsec": 42.649638975474886,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 8.083519625357027e-05,
+        "HH_LH_splitting_meV": 0.6461505518991632
+      }
+    },
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.148769647033568,
+        "PL_reported_nm": 1079.2781542701862,
+        "mismatch_reported_arcsec": 21.324819487737443,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 7.934329588654698e-05,
+        "HH_LH_splitting_meV": 0.634203332272729
+      }
+    },
+    {
+      "x": 0.11,
+      "y": 0.24,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.148769647033568,
+        "PL_reported_nm": 1079.2781542701862,
+        "mismatch_reported_arcsec": 42.649638975474886,
+        "a_perp_XRD_A": 5.8687162067330885,
+        "eps_parallel": 7.934329588654698e-05,
+        "HH_LH_splitting_meV": 0.634203332272729
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.1152627549811072,
+        "PL_reported_nm": 1111.7039269844583,
+        "mismatch_reported_arcsec": -17.54243776913636,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.521877201892678e-05,
+        "HH_LH_splitting_meV": 0.5131707200042989
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.1152627549811072,
+        "PL_reported_nm": 1111.7039269844583,
+        "mismatch_reported_arcsec": -35.08487553827272,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.521877201892678e-05,
+        "HH_LH_splitting_meV": 0.5131707200042989
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.1085924794833522,
+        "PL_reported_nm": 1118.3929237097277,
+        "mismatch_reported_arcsec": -17.54243776913636,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.679792968355969e-05,
+        "HH_LH_splitting_meV": 0.5255790185084159
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.1085924794833522,
+        "PL_reported_nm": 1118.3929237097277,
+        "mismatch_reported_arcsec": -35.08487553827272,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.679792968355969e-05,
+        "HH_LH_splitting_meV": 0.5255790185084159
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0984485419693224,
+        "PL_reported_nm": 1128.7210433264238,
+        "mismatch_reported_arcsec": -17.54243776913636,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.916609395546391e-05,
+        "HH_LH_splitting_meV": 0.5441854412318512
+      }
+    },
+    {
+      "x": 0.14,
+      "y": 0.31,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0984485419693224,
+        "PL_reported_nm": 1128.7210433264238,
+        "mismatch_reported_arcsec": -35.08487553827272,
+        "a_perp_XRD_A": 5.870509592274158,
+        "eps_parallel": -6.916609395546391e-05,
+        "HH_LH_splitting_meV": 0.5441854412318512
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.037770490995642,
+        "PL_reported_nm": 1194.716938947158,
+        "mismatch_reported_arcsec": 67.74842121372305,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.0002630329880839444,
+        "HH_LH_splitting_meV": 2.0412480602257066
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.037770490995642,
+        "PL_reported_nm": 1194.716938947158,
+        "mismatch_reported_arcsec": 135.4968424274461,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.0002630329880839444,
+        "HH_LH_splitting_meV": 2.0412480602257066
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.031008355366105,
+        "PL_reported_nm": 1202.5527997702231,
+        "mismatch_reported_arcsec": 67.74842121372305,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.0002598934125155328,
+        "HH_LH_splitting_meV": 2.0167748756696775
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.031008355366105,
+        "PL_reported_nm": 1202.5527997702231,
+        "mismatch_reported_arcsec": 135.4968424274461,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.0002598934125155328,
+        "HH_LH_splitting_meV": 2.0167748756696775
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.020725700156332,
+        "PL_reported_nm": 1214.6671570453368,
+        "mismatch_reported_arcsec": 67.74842121372305,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.00025518520517620047,
+        "HH_LH_splitting_meV": 1.9800790117712308
+      }
+    },
+    {
+      "x": 0.2,
+      "y": 0.43,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.020725700156332,
+        "PL_reported_nm": 1214.6671570453368,
+        "mismatch_reported_arcsec": 135.4968424274461,
+        "a_perp_XRD_A": 5.866575870021299,
+        "eps_parallel": 0.00025518520517620047,
+        "HH_LH_splitting_meV": 1.9800790117712308
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0134851509370355,
+        "PL_reported_nm": 1223.3449924606048,
+        "mismatch_reported_arcsec": 93.91754820405292,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.000364887738361519,
+        "HH_LH_splitting_meV": 2.8204369937187073
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0134851509370355,
+        "PL_reported_nm": 1223.3449924606048,
+        "mismatch_reported_arcsec": 187.83509640810584,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.000364887738361519,
+        "HH_LH_splitting_meV": 2.8204369937187073
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.006695180171174,
+        "PL_reported_nm": 1231.5962257027843,
+        "mismatch_reported_arcsec": 93.91754820405292,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.00036111814396377895,
+        "HH_LH_splitting_meV": 2.7911285828620933
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.006695180171174,
+        "PL_reported_nm": 1231.5962257027843,
+        "mismatch_reported_arcsec": 187.83509640810584,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.00036111814396377895,
+        "HH_LH_splitting_meV": 2.7911285828620933
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.9963702752255372,
+        "PL_reported_nm": 1244.3586638023232,
+        "mismatch_reported_arcsec": 93.91754820405292,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.0003554651492518879,
+        "HH_LH_splitting_meV": 2.7471834758545306
+      }
+    },
+    {
+      "x": 0.22,
+      "y": 0.47,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.9963702752255372,
+        "PL_reported_nm": 1244.3586638023232,
+        "mismatch_reported_arcsec": 187.83509640810584,
+        "a_perp_XRD_A": 5.865370174469347,
+        "eps_parallel": 0.0003554651492518879,
+        "HH_LH_splitting_meV": 2.7471834758545306
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.034026110525152,
+        "PL_reported_nm": 1199.043207624924,
+        "mismatch_reported_arcsec": -595.62684089639,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.002277414573120362,
+        "HH_LH_splitting_meV": 17.035421441802562
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.034026110525152,
+        "PL_reported_nm": 1199.043207624924,
+        "mismatch_reported_arcsec": -1191.25368179278,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.002277414573120362,
+        "HH_LH_splitting_meV": 17.035421441802562
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0274323463072446,
+        "PL_reported_nm": 1206.7383208132312,
+        "mismatch_reported_arcsec": -595.62684089639,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.0022792370496620418,
+        "HH_LH_splitting_meV": 17.04841981908315
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0274323463072446,
+        "PL_reported_nm": 1206.7383208132312,
+        "mismatch_reported_arcsec": -1191.25368179278,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.0022792370496620418,
+        "HH_LH_splitting_meV": 17.04841981908315
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0174083772705556,
+        "PL_reported_nm": 1218.6276543723563,
+        "mismatch_reported_arcsec": -595.62684089639,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.002281970102390396,
+        "HH_LH_splitting_meV": 17.067910702205563
+      }
+    },
+    {
+      "x": 0.15,
+      "y": 0.4,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0174083772705556,
+        "PL_reported_nm": 1218.6276543723563,
+        "mismatch_reported_arcsec": -1191.25368179278,
+        "a_perp_XRD_A": 5.897337924871759,
+        "eps_parallel": -0.002281970102390396,
+        "HH_LH_splitting_meV": 17.067910702205563
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0061759008745088,
+        "PL_reported_nm": 1232.231842617583,
+        "mismatch_reported_arcsec": 1303.3016190868618,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.005029409199134083,
+        "HH_LH_splitting_meV": 40.89133709372293
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0061759008745088,
+        "PL_reported_nm": 1232.231842617583,
+        "mismatch_reported_arcsec": 2606.6032381737236,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.005029409199134083,
+        "HH_LH_splitting_meV": 40.89133709372293
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.9990924490301035,
+        "PL_reported_nm": 1240.968226249346,
+        "mismatch_reported_arcsec": 1303.3016190868618,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.005023232718859516,
+        "HH_LH_splitting_meV": 40.83800974988858
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.9990924490301035,
+        "PL_reported_nm": 1240.968226249346,
+        "mismatch_reported_arcsec": 2606.6032381737236,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.005023232718859516,
+        "HH_LH_splitting_meV": 40.83800974988858
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.9883157059107156,
+        "PL_reported_nm": 1254.4999304544187,
+        "mismatch_reported_arcsec": 1303.3016190868618,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.0050139703422855675,
+        "HH_LH_splitting_meV": 40.75805182232388
+      }
+    },
+    {
+      "x": 0.3,
+      "y": 0.5,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.9883157059107156,
+        "PL_reported_nm": 1254.4999304544187,
+        "mismatch_reported_arcsec": 2606.6032381737236,
+        "a_perp_XRD_A": 5.810286950573241,
+        "eps_parallel": 0.0050139703422855675,
+        "HH_LH_splitting_meV": 40.75805182232388
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.8175531736525149,
+        "PL_reported_nm": 1516.5276391661018,
+        "mismatch_reported_arcsec": 111.4003760208199,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.0004482356486683603,
+        "HH_LH_splitting_meV": 3.3882899021041855
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.8175531736525149,
+        "PL_reported_nm": 1516.5276391661018,
+        "mismatch_reported_arcsec": 222.8007520416398,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.0004482356486683603,
+        "HH_LH_splitting_meV": 3.3882899021041855
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.8107063374521025,
+        "PL_reported_nm": 1529.3355029499246,
+        "mismatch_reported_arcsec": 111.4003760208199,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.0004361579174592123,
+        "HH_LH_splitting_meV": 3.2965445273817453
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.8107063374521025,
+        "PL_reported_nm": 1529.3355029499246,
+        "mismatch_reported_arcsec": 222.8007520416398,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.0004361579174592123,
+        "HH_LH_splitting_meV": 3.2965445273817453
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 0.8002885944767488,
+        "PL_reported_nm": 1549.2436014818454,
+        "mismatch_reported_arcsec": 111.4003760208199,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.00041804617219942664,
+        "HH_LH_splitting_meV": 3.1590095658469317
+      }
+    },
+    {
+      "x": 0.4,
+      "y": 0.85,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 0.8002885944767488,
+        "PL_reported_nm": 1549.2436014818454,
+        "mismatch_reported_arcsec": 222.8007520416398,
+        "a_perp_XRD_A": 5.864565013250474,
+        "eps_parallel": 0.00041804617219942664,
+        "HH_LH_splitting_meV": 3.1590095658469317
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0495368027109253,
+        "PL_reported_nm": 1181.323019001834,
+        "mismatch_reported_arcsec": -1094.1670317139437,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.004170383984306358,
+        "HH_LH_splitting_meV": 30.185448449821216
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 280,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0495368027109253,
+        "PL_reported_nm": 1181.323019001834,
+        "mismatch_reported_arcsec": -2188.3340634278875,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.004170383984306358,
+        "HH_LH_splitting_meV": 30.185448449821216
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0431159625806812,
+        "PL_reported_nm": 1188.5945846947054,
+        "mismatch_reported_arcsec": -1094.1670317139437,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.004171031593695029,
+        "HH_LH_splitting_meV": 30.189662652314492
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 300,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0431159625806812,
+        "PL_reported_nm": 1188.5945846947054,
+        "mismatch_reported_arcsec": -2188.3340634278875,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.004171031593695029,
+        "HH_LH_splitting_meV": 30.189662652314492
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "theta",
+      "expected": {
+        "gap_eV": 1.0333557457344535,
+        "PL_reported_nm": 1199.8210581882329,
+        "mismatch_reported_arcsec": -1094.1670317139437,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.00417200277536478,
+        "HH_LH_splitting_meV": 30.19598215719141
+      }
+    },
+    {
+      "x": 0.1,
+      "y": 0.35,
+      "plTemp": 330,
+      "xrdTemp": 300,
+      "axis": "two_theta",
+      "expected": {
+        "gap_eV": 1.0333557457344535,
+        "PL_reported_nm": 1199.8210581882329,
+        "mismatch_reported_arcsec": -2188.3340634278875,
+        "a_perp_XRD_A": 5.9207098919267045,
+        "eps_parallel": -0.00417200277536478,
+        "HH_LH_splitting_meV": 30.19598215719141
+      }
+    }
+  ]
+}
