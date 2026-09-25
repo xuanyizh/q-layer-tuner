@@ -7,12 +7,14 @@ import json
 import math
 from pathlib import Path
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 HC = 1239.8419843320026
 RAD = math.pi / 648000
 ROOT = Path(__file__).resolve().parent
 PARAMETERS = json.loads((ROOT / "parameters.json").read_text())
-CALIBRATION = json.loads((ROOT / "bep_calibration.json").read_text())
+from .calibration import (CALIBRATION, InputError, require, finite, poly_value,
+    poly_derivative, interval_roots, get_record, curve_error, summarize,
+    fit_calibration, validate_profile)
 DEFAULTS = dict(
     inRatio=.8, gaRatio=.2, targetPL=1197., targetRate=1., measuredPL=1190.,
     mismatch=40., knownElement="In", knownRate=.8, inTemp=999.7, gaTemp=1000.,
@@ -26,24 +28,17 @@ for _element in ("As", "P"):
         DEFAULTS[f"{_element.lower()}C{_j}"] = _value
 
 
-class InputError(ValueError):
-    """A user input or requested conversion is outside the model."""
-
-
-def require(condition, message):
-    if not condition:
-        raise InputError(message)
-
-
-def finite(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
-
-
-def settings_with_defaults(settings=None):
+def settings_with_defaults(settings=None, calibrations=None):
     require(settings is None or isinstance(settings, dict), "Settings must be an object.")
     settings = settings or {}
     require(not set(settings) - set(DEFAULTS), "Unsupported recipe input(s): " + ", ".join(sorted(set(settings) - set(DEFAULTS))))
-    return {**DEFAULTS, **settings}
+    defaults = dict(DEFAULTS)
+    if calibrations is not None:
+        for source in ("As","P"):
+            record = get_record(source,calibrations)
+            for j,value in enumerate(record["raw_coefficients_ascending_microtorr"]):
+                defaults[f"{source.lower()}C{j}"] = value
+    return {**defaults, **settings}
 
 
 def validate(s):
@@ -193,68 +188,25 @@ def corrected_temperature(old_c, slope_b, ratio):
     return value
 
 
-def poly_value(coefficients, x):
-    value = 0.
-    for c in reversed(coefficients):
-        value = value*x+c
-    return value
-
-
-def poly_derivative(c):
-    return [j*c[j] for j in range(1, len(c))]
-
-
-def interval_roots(c, low, high):
-    """Isolate real polynomial roots using derivative critical points."""
-    c = list(c)
-    while len(c) > 1 and c[-1] == 0:
-        c.pop()
-    if len(c) <= 1:
-        return []
-    if len(c) == 2:
-        root = -c[0]/c[1]
-        return [root] if low < root < high else []
-    cuts = [low] + interval_roots(poly_derivative(c), low, high) + [high]
-    roots = []
-    for v in cuts[1:-1]:
-        if abs(poly_value(c,v)) < 1e-12:
-            roots.append(v)
-    for a,b in zip(cuts,cuts[1:]):
-        fa,fb = poly_value(c,a),poly_value(c,b)
-        if fa*fb < 0:
-            for _ in range(65):
-                mid = (a+b)/2
-                fm = poly_value(c,mid)
-                if fa*fm <= 0:
-                    b,fb = mid,fm
-                else:
-                    a,fa = mid,fm
-            roots.append((a+b)/2)
-    return sorted(set(roots))
-
-
-def source_curve(source, settings=None):
-    require(source in ("As", "P"), "Select As or P.")
-    s = settings_with_defaults(settings)
+def source_curve(source, settings=None, calibrations=None):
+    record = get_record(source,calibrations)
+    s = settings_with_defaults(settings,calibrations)
     c = [s[f"{source.lower()}C{j}"] for j in range(6)]
-    require(all(finite(v) for v in c), f"{source} coefficients must be finite numbers.")
-    low,high = CALIBRATION["sources"][source]["valid_valve_range"]
-    derivative = poly_derivative(c)
-    candidates = [low,high]+interval_roots(poly_derivative(derivative),low,high)
-    require(min(poly_value(derivative,v) for v in candidates) > 0,
-            f"{source} polynomial must increase throughout valve {low:g}–{high:g}.")
-    require(poly_value(c,low) > 0, f"{source} polynomial must predict positive BEP throughout its range.")
+    require(all(finite(v) for v in c),f"{source} coefficients must be finite numbers.")
+    low,high = record["valid_valve_range"]
+    error = curve_error(source,c,low,high)
+    require(error is None,error)
     return c,low,high
 
 
-def bep_from_valve(source, valve, settings=None):
-    c,low,high = source_curve(source,settings)
+def bep_from_valve(source, valve, settings=None, calibrations=None):
+    c,low,high = source_curve(source,settings,calibrations)
     require(finite(valve) and low <= valve <= high, f"{source} valve must be within measured range {low:g}–{high:g}; extrapolation is disabled.")
     return poly_value(c,valve)*1e-6
 
 
-def valve_from_bep(source, bep_torr, settings=None):
-    c,low,high = source_curve(source,settings)
+def valve_from_bep(source, bep_torr, settings=None, calibrations=None):
+    c,low,high = source_curve(source,settings,calibrations)
     bmin,bmax = poly_value(c,low)*1e-6,poly_value(c,high)*1e-6
     require(finite(bep_torr) and bmin <= bep_torr <= bmax,
             f"Requested {source} BEP is outside the fitted range {bmin:.6g}–{bmax:.6g} Torr; no extrapolation.")
@@ -267,19 +219,9 @@ def valve_from_bep(source, bep_torr, settings=None):
     return (low+high)/2
 
 
-def calibration_summary(source, settings=None):
-    c,low,high = source_curve(source,settings)
-    data = CALIBRATION["sources"][source]["measurements"]
-    measured = [r["bep_torr"] for r in data]
-    fitted = [poly_value(c,r["valve"])*1e-6 for r in data]
-    residual = [a-b for a,b in zip(fitted,measured)]
-    mean = sum(measured)/len(measured)
-    return dict(source=source, range=[low,high], coefficients=c,
-                rSquared=1-sum(r*r for r in residual)/sum((v-mean)**2 for v in measured),
-                rmse=math.sqrt(sum(r*r for r in residual)/len(residual)),
-                maxRelativePercent=max(abs(r/v)*100 for r,v in zip(residual,measured)),
-                measurements=[dict(valve=r["valve"],bep=r["bep_torr"]) for r in data],
-                curve=[dict(valve=low+(high-low)*j/80,bep=poly_value(c,low+(high-low)*j/80)*1e-6) for j in range(81)])
+def calibration_summary(source, settings=None, calibrations=None):
+    c,_,_ = source_curve(source,settings,calibrations)
+    return summarize(source,get_record(source,calibrations),c)
 
 
 def uncertainty(current,s,p,offset):
@@ -297,8 +239,8 @@ def uncertainty(current,s,p,offset):
                 **{"as": math.hypot(c*s["sigmaPL"],a*s["sigmaXRD"])/abs(det)})
 
 
-def calculate(settings=None, parameters=None):
-    s = settings_with_defaults(settings)
+def calculate(settings=None, parameters=None, calibrations=None):
+    s = settings_with_defaults(settings,calibrations)
     validate(s)
     p = parameters or PARAMETERS
     tx,ty = target_composition(s,p)
@@ -322,21 +264,21 @@ def calculate(settings=None, parameters=None):
     as_full = as_error = as_ratio = None
     bep = {"As":{},"P":{}}
     try:
-        current_bep = bep_from_valve("As",s["asValve"],s)
+        current_bep = bep_from_valve("As",s["asValve"],s,calibrations)
         bep["As"]["current"] = current_bep
         require(current["y"]>1e-6 and target["y"]>1e-6,"As correction is undefined at zero As composition.")
         as_ratio = (target["y"]*s["targetRate"]/(current["y"]*total))**(1/s["asExponent"])
         target_bep = current_bep*as_ratio
         bep["As"]["fullRequested"] = target_bep
-        as_full = valve_from_bep("As",target_bep,s)
+        as_full = valve_from_bep("As",target_bep,s,calibrations)
         applied = partial(s["asValve"],as_full,s["asStep"])
         settings_result["As"] = dict(current=s["asValve"],full=as_full,applied=applied)
-        bep["As"]["applied"] = bep_from_valve("As",applied,s)
+        bep["As"]["applied"] = bep_from_valve("As",applied,s,calibrations)
     except InputError as error:
         as_error = str(error)
     if s["pValve"] is not None:
         try:
-            pbep = bep_from_valve("P",s["pValve"],s)
+            pbep = bep_from_valve("P",s["pValve"],s,calibrations)
             bep["P"] = dict(valve=s["pValve"],current=pbep,full=pbep,applied=pbep,heldFixed=True)
         except InputError as error:
             bep["P"] = dict(error=str(error))
@@ -346,7 +288,7 @@ def calculate(settings=None, parameters=None):
         rin = rates["In"]["current"]*10**(s["inB"]*(1/(s["inTemp"]+273.15)-1/(ti+273.15)))
         rga = rates["Ga"]["current"]*10**(s["gaB"]*(1/(s["gaTemp"]+273.15)-1/(tg+273.15)))
         rate = rin+rga
-        y = current["y"]*total/rate*(bep_from_valve("As",valve,s)/bep["As"]["current"])**s["asExponent"]
+        y = current["y"]*total/rate*(bep_from_valve("As",valve,s,calibrations)/bep["As"]["current"])**s["asExponent"]
         if not math.isfinite(y) or not 0<=y<=1:
             return None
         f = forward(rga/rate,y,s,p,offset)
@@ -381,7 +323,7 @@ def calculate(settings=None, parameters=None):
     summaries = {}
     for source in ("As","P"):
         try:
-            summaries[source] = calibration_summary(source,s)
+            summaries[source] = calibration_summary(source,s,calibrations)
         except InputError as error:
             summaries[source] = dict(error=str(error))
     return dict(version=VERSION,inputs=s,target=target,current=current,offset=offset,total=total,
@@ -398,14 +340,19 @@ def dispatch(payload):
     if action == "metadata":
         return dict(version=VERSION,defaults=DEFAULTS,calibration=CALIBRATION)
     if action == "calculate":
-        return calculate(payload.get("settings"))
+        return calculate(payload.get("settings"),calibrations=payload.get("calibrations"))
     if action == "convert_bep":
         source = payload.get("source")
-        s = settings_with_defaults(payload.get("settings"))
+        profile = payload.get("calibrations")
+        s = settings_with_defaults(payload.get("settings"),profile)
         if payload.get("direction") == "valve_to_bep":
             v = payload.get("value")
-            return dict(source=source,valve=v,bepTorr=bep_from_valve(source,v,s))
+            return dict(source=source,valve=v,bepTorr=bep_from_valve(source,v,s,profile))
         require(payload.get("direction")=="bep_to_valve","Choose valve-to-BEP or BEP-to-valve.")
         b = payload.get("value")
-        return dict(source=source,bepTorr=b,valve=valve_from_bep(source,b,s))
+        return dict(source=source,bepTorr=b,valve=valve_from_bep(source,b,s,profile))
+    if action == "fit_calibration":
+        return fit_calibration(payload.get("source"),payload.get("text"),payload.get("unit","torr"),payload.get("measurements"))
+    if action == "validate_calibrations":
+        return validate_profile(payload.get("calibrations"))
     raise InputError("Unknown calculation action.")
